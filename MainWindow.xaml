@@ -1,0 +1,28 @@
+﻿<Window x:Class="MQTTTest.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MQTTTest2"
+        mc:Ignorable="d"
+        Title="MQTT Test " Height="399.375" Width="622.812" Closing="Window_Closing">
+    <Grid>
+        <TextBox x:Name="txtBrokerAdress" HorizontalAlignment="Left" Height="19" Margin="10,26,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="202"/>
+        <TextBox x:Name="txtBrokerPort" HorizontalAlignment="Left" Height="19" Margin="269,26,0,0" TextWrapping="Wrap" Text="1883" VerticalAlignment="Top" Width="75"/>
+        <CheckBox x:Name="isEncrypted" Content="Encrypted" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="221,50,0,0" VerticalAlignment="Top" Width="123"/>
+        <Button x:Name="btnConnect" Content="Connect" HorizontalAlignment="Left" Height="28" Margin="487,103,0,0" VerticalAlignment="Top" Width="109" Click="btnConnect_Click"/>
+        <TextBox x:Name="txtUserName" HorizontalAlignment="Left" Height="19" Margin="396,31,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="202"/>
+        <PasswordBox x:Name="txtPasword" HorizontalAlignment="Left" Height="19" Margin="396,69,0,0" VerticalAlignment="Top" Width="202"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Height="16" Margin="396,53,0,0" TextWrapping="Wrap" Text="Password" VerticalAlignment="Top" Width="200"/>
+        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Height="16" Margin="396,15,0,0" TextWrapping="Wrap" Text="UserName" VerticalAlignment="Top" Width="91"/>
+        <TextBlock x:Name="textBlock2" HorizontalAlignment="Left" Height="16" Margin="9,10,0,0" TextWrapping="Wrap" Text="MQTT Server Adress" VerticalAlignment="Top" Width="201"/>
+        <TextBlock x:Name="textBlock3" HorizontalAlignment="Left" Height="16" Margin="271,10,0,0" TextWrapping="Wrap" Text="Port" VerticalAlignment="Top" Width="42"/>
+        <TextBox x:Name="txtClientId" HorizontalAlignment="Left" Height="19" Margin="10,64,0,0" TextWrapping="Wrap" Text="BT_DMM" VerticalAlignment="Top" Width="202"/>
+        <TextBlock x:Name="textBlock1_Copy" HorizontalAlignment="Left" Height="16" Margin="10,48,0,0" TextWrapping="Wrap" Text="Client ID" VerticalAlignment="Top" Width="200"/>
+        <TextBox x:Name="txtTopic" HorizontalAlignment="Left" Height="19" Margin="10,103,0,0" TextWrapping="Wrap" Text="Values" VerticalAlignment="Top" Width="202"/>
+        <TextBlock x:Name="textBlock1_Copy1" HorizontalAlignment="Left" Height="16" Margin="10,87,0,0" TextWrapping="Wrap" Text="Topic" VerticalAlignment="Top" Width="200"/>
+        <CheckBox x:Name="chkUseLogin" Content="Use Login" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="487,14,0,0" VerticalAlignment="Top" Width="109"/>
+        <ListBox x:Name="listBox1" HorizontalAlignment="Left" Height="205" Margin="10,142,0,0" VerticalAlignment="Top" Width="588"/>
+
+    </Grid>
+</Window>
