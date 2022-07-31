@@ -26,22 +26,15 @@ namespace MQTTTest
             InitializeComponent();
         }
 
-        public override string ToString()
-        {
-            return GetType().GetProperties()
-                .Select(info => (info.Name, Value: info.GetValue(this, null) ?? "(null)"))
-                .Aggregate(
-                    new StringBuilder(),
-                    (sb, pair) => sb.AppendLine($"{pair.Name}: {pair.Value}"),
-                    sb => sb.ToString());
-        }
         private void MqttClient_MqttMsgPublishReceived(object sender, uPLibrary.Networking.M2Mqtt.Messages.MqttMsgPublishEventArgs e)
         {
             var message = Encoding.UTF8.GetString(e.Message);
 
             Dispatcher.Invoke(delegate
             {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
-                listBox1.Items.Add($"Message: ( {message} ) from Topic ( {e.Topic} )");
+                listBox1.Items.Add($"Message: ( {message} ) from Topic ( {e.Topic} ) at {DateTime.Now}");
+
+                listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
             });
             string[] SplitedMessage = message.Split(':');
             if (SplitedMessage.Length == 3 && SplitedMessage[0] == "Connected" && SplitedMessage[2] == "True")
@@ -50,7 +43,8 @@ namespace MQTTTest
                 
                 Dispatcher.Invoke(delegate
                 {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
-                    listBox1.Items.Add("Topic Subscribed : BT_DMM/" + SplitedMessage[1] + "/Values");
+                    listBox1.Items.Add("Topic Subscribed : BT_DMM/" + SplitedMessage[1] + "/Values at " + DateTime.Now);
+                    listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
                 });
             }
         }
@@ -70,14 +64,19 @@ namespace MQTTTest
             {
                 mqttClient = new MqttClient((string)txtBrokerAdress.Text, Convert.ToInt32(txtBrokerPort.Text), (bool)isEncrypted.IsChecked, null, null, (bool)isEncrypted.IsChecked ? MqttSslProtocols.SSLv3 : MqttSslProtocols.None);
                 mqttClient.shouldReconnect = true;
+                mqttClient.MqttMsgPublishReceived -= MqttClient_MqttMsgPublishReceived;
+                mqttClient.MqttMsgPublishReceived += MqttClient_MqttMsgPublishReceived;
+                mqttClient.Subscribe(new string[] { $"{txtClientId.Text}/{txtTopic.Text}" }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
                 if ((bool)chkUseLogin.IsChecked)
-                    mqttClient.Connect(txtClientId.Text, txtUserName.Text, txtPasword.Password);
+                    mqttClient.Connect(txtClientId.Text+"_test", txtUserName.Text, txtPasword.Password);
                 else
-                    mqttClient.Connect(txtClientId.Text);
+                    mqttClient.Connect(txtClientId.Text+"_test");
                 if (mqttClient.IsConnected)
                 {
+
                     listBox1.Items.Add("Connection Port : " + mqttClient.Settings.Port + " Protocol Version : " + mqttClient.ProtocolVersion);
 
+                    listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
                 }
             }
             catch (Exception ex)
