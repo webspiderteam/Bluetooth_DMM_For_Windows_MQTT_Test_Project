@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using System.Text.Json;
 
 namespace MQTTTest
 {
@@ -29,24 +30,30 @@ namespace MQTTTest
         private void MqttClient_MqttMsgPublishReceived(object sender, uPLibrary.Networking.M2Mqtt.Messages.MqttMsgPublishEventArgs e)
         {
             var message = Encoding.UTF8.GetString(e.Message);
-
+            var user = JsonSerializer.Deserialize<Dictionary<string,object>>(message);
+           // var result = JsonSerializer.Deserialize(message,object);
             Dispatcher.Invoke(delegate
             {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
                 listBox1.Items.Add($"Message: ( {message} ) from Topic ( {e.Topic} ) at {DateTime.Now}");
-
+                
                 listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
             });
-            string[] SplitedMessage = message.Split(':');
-            if (SplitedMessage.Length == 3 && SplitedMessage[0] == "Connected" && SplitedMessage[2] == "True")
+            if (user.ContainsKey("Status"))
             {
-                mqttClient.Subscribe(new string[] { "BT_DMM/" + SplitedMessage[1] + "/Values" }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                var a = ((JsonElement)user["Status"]).GetString();// _parent._lastIndexAndString.Item2;
+                //var b = user["UseMAC"]; 
+            }
+            if (user.ContainsKey("Status") && ((JsonElement)user["Status"]).GetString() == "Connected" && ((JsonElement)user["UseMAC"]).GetString() == "True") 
+            {
+                mqttClient.Subscribe(new string[] { "BT_DMM/" + ((JsonElement)user["MAC"]).GetString() + "/Values" }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
                 
                 Dispatcher.Invoke(delegate
                 {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
-                    listBox1.Items.Add("Topic Subscribed : BT_DMM/" + SplitedMessage[1] + "/Values at " + DateTime.Now);
+                    listBox1.Items.Add("Topic Subscribed : BT_DMM/" + ((JsonElement)user["MAC"]).GetString() + "/Values at " + DateTime.Now);
                     listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
                 });
             }
+            Debug.WriteLine("test");
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -86,5 +93,6 @@ namespace MQTTTest
                 MessageBox.Show(ex.ToString());
             }
         }
+
     }
 }
