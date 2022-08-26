@@ -2,15 +2,15 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
+using MQTTnet.Client;
+using MQTTnet.Extensions.ManagedClient;
 using System.Text.Json;
+using MQTTnet;
+using System.Threading;
+using MQTTnet.Protocol;
 
 namespace MQTTTest
 {
@@ -21,72 +21,158 @@ namespace MQTTTest
 
     public partial class MainWindow : Window
     {
-        MqttClient mqttClient;
+        
+        IMqttClient client;
+        MqttClientOptions options;
+        private string topic;
+        //MqttClient mqttClient;
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void MqttClient_MqttMsgPublishReceived(object sender, uPLibrary.Networking.M2Mqtt.Messages.MqttMsgPublishEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
-            var message = Encoding.UTF8.GetString(e.Message);
-            var user = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(message);
+            if (client != null && client.IsConnected)
+            {
+                await client.DisconnectAsync();
+                client.Dispose();
+            }
+        }
+
+        private async void btnConnect_Click(object sender, RoutedEventArgs e)
+        {
+            topic = $"{txtClientId.Text}/{txtTopic.Text}";
+            if (client != null && client.IsConnected)
+            {
+                client.DisconnectAsync();
+                client.Dispose();
+            }
+            Connect();
+        }
+        async Task Connect()
+        {
+            //var server = "test.mosquitto.org";
+            //server = "broker.hivemq.com";
+            var server = txtBrokerAdress.Text;
+            var port = Convert.ToInt16(txtBrokerPort.Text);
+            var mqttFactory = new MqttFactory();
+            client = mqttFactory.CreateMqttClient();
+            options = new MqttClientOptionsBuilder()
+                .WithClientId(Guid.NewGuid().ToString())
+                .WithTcpServer(server, port)
+                .WithCleanSession()
+                .Build();
+            client.ConnectedAsync += Client_ConnectedAsync;
+            client.DisconnectedAsync += Client_DisconnectedAsync;
+            client.ApplicationMessageReceivedAsync += Client_ApplicationMessageReceivedAsync;
+            
+            await client.ConnectAsync(options, CancellationToken.None);
+            var msg = "connect,server=" + server + ",port=" + port.ToString();
+            WriteLog(msg);
+        }
+
+        private Task Client_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
+        {
+            var msg = $"received: {Encoding.UTF8.GetString(arg.ApplicationMessage.Payload)} from Topic {arg.ApplicationMessage.Topic}";
+            var message = Encoding.UTF8.GetString(arg.ApplicationMessage.Payload);
             Dispatcher.Invoke(delegate
             {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
-                listBox1.Items.Add($"Message: ( {message} ) from Topic ( {e.Topic} ) at {DateTime.Now}");
-                
+                listBox1.Items.Add($"Message: ( {message} ) from Topic ( {arg.ApplicationMessage.Topic} ) at {DateTime.Now}");
+
                 listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
             });
-            if (user.ContainsKey("Status") && user["Status"].GetString() == "Connected" && user["UseMAC"].GetString() == "True") 
+            if (message.Substring(0, 1) == "{" && message.Substring(message.Length - 1) == "}")
             {
-                mqttClient.Subscribe(new string[] { "BT_DMM/" + user["MAC"].GetString() + "/Values" }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
-                
-                Dispatcher.Invoke(delegate
-                {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
-                    listBox1.Items.Add("Topic Subscribed : BT_DMM/" + ((JsonElement)user["MAC"]).GetString() + "/Values at " + DateTime.Now);
-                    listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
-                });
-            }
-            Debug.WriteLine("test");
-        }
-
-        private void Window_Closing(object sender, CancelEventArgs e)
-        {
-            if (mqttClient != null && mqttClient.IsConnected)
-                mqttClient.Disconnect();
-        }
-
-        private void btnConnect_Click(object sender, RoutedEventArgs e)
-        {
-            if (mqttClient != null && mqttClient.IsConnected)
-                mqttClient.Disconnect();
-
-            try
-            {
-                mqttClient = new MqttClient((string)txtBrokerAdress.Text, Convert.ToInt32(txtBrokerPort.Text), (bool)isEncrypted.IsChecked, null, null, (bool)isEncrypted.IsChecked ? MqttSslProtocols.SSLv3 : MqttSslProtocols.None);
-                mqttClient.shouldReconnect = true;
-                mqttClient.MqttMsgPublishReceived -= MqttClient_MqttMsgPublishReceived;
-                mqttClient.MqttMsgPublishReceived += MqttClient_MqttMsgPublishReceived;
-                mqttClient.Subscribe(new string[] { $"{txtClientId.Text}/{txtTopic.Text}" }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
-                if ((bool)chkUseLogin.IsChecked)
-                    mqttClient.Connect(txtClientId.Text, txtUserName.Text, txtPasword.Password);
-                else
-                    mqttClient.Connect(txtClientId.Text);
-                if (mqttClient.IsConnected)
+                try
                 {
+                    Dictionary<string, JsonElement> user = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(message);
+                    if (user.ContainsKey("Status") && user["Status"].GetString() == "Connected" && user["UseMAC"].GetString() == "True")
+                    {
 
-                    listBox1.Items.Add("Connection Port : " + mqttClient.Settings.Port + " Protocol Version : " + mqttClient.ProtocolVersion);
 
+                        Dispatcher.Invoke(delegate
+                        {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
+                            Subscribe($"{txtClientId.Text}/{user["MAC"].GetString()}/{txtTopic.Text}");
+                            listBox1.Items.Add($"Topic Subscribed : {txtClientId.Text}/{user["MAC"].GetString()}/{txtTopic.Text} at {DateTime.Now}");
+                            listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
+                        });
+                    }
+                }
+                catch (Exception ex)
+                { Console.WriteLine(ex.Message); }
+            }
+
+            Debug.WriteLine(msg);
+            return Task.CompletedTask;
+        }
+
+        private Task Client_DisconnectedAsync(MqttClientDisconnectedEventArgs arg)
+        {
+            var msg = "Disconnected from broker!";
+            WriteLog(msg);
+            Task.Delay(25);
+            client.ConnectAsync(options);
+            //dispatcherTimer.Start();
+            return Task.CompletedTask;
+        }
+
+        private Task Client_ConnectedAsync(MqttClientConnectedEventArgs arg)
+        {
+            var msg = "connected to the broker!";
+            WriteLog(msg);
+            //var userId = txtUser.Text;
+            Dispatcher.Invoke(delegate
+            {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
+                if (client.IsConnected)
+                {
+                    MQTTnet.Client.MqttClientOptions options = client.Options; 
+                    listBox1.Items.Add("Connection Port : " + ((MQTTnet.Client.MqttClientTcpOptions)options.ChannelOptions).Port + " Protocol Version : " + options.ProtocolVersion);
                     listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
                 }
-            }
-            catch (Exception ex)
-            {
-                //MQTT Connection Error
-                Debug.WriteLine("MQTT Connection Error");
-                MessageBox.Show(ex.ToString());
-            }
+            });
+                Subscribe(topic);
+            return Task.CompletedTask;
         }
 
+        void Subscribe(string stopic)
+        {
+            var topicFilter = new MqttTopicFilterBuilder()
+                    .WithTopic(stopic)
+                    .Build();
+            client.SubscribeAsync(topicFilter);
+            var subscribeMsg = "Subscribed topic=" + stopic;
+            WriteLog(subscribeMsg);
+        }
+
+        void WriteLog(string msg)
+        {
+            Debug.WriteLine(msg);
+        }
+
+        private void btnPublish_Click(object sender, RoutedEventArgs e)
+        {
+            var msg = "{\"Publish\": \"Test\"}";
+            Publish(msg);
+
+        }
+
+        async Task Publish(string msg)
+        {
+            
+            //var userId = txtUser.Text;
+            var topic = $"BT_DMM/Values";
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(topic)
+                .WithPayload(msg)
+                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+                .Build();
+            if (client.IsConnected)
+            {
+                await client.PublishAsync(message);
+            }
+            var doneMsg = "message published,topic=" + topic + ",msg=" + msg;
+            WriteLog(doneMsg);
+        }
     }
 }
