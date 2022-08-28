@@ -3,4 +3,4 @@ Bluetooth DMM For Windows MQTT Test Project
 
 This project if just for testting https://github.com/webspiderteam/Bluetooth-DMM-For-Windows project's MQTT ability. 
 
-For testing you need a Mqtt Broker(server). You can donload and install [Mosquitto](https://mosquitto.org/download/). After instal make sure Mosquitto Service is running (from windows services).
+For testing you don't need a Mqtt Broker(server) anymore. If you want You can donload and install [Mosquitto](https://mosquitto.org/download/). After instal make sure Mosquitto Service is running (from windows services).
