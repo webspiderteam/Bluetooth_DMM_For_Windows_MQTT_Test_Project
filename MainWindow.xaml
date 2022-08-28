@@ -7,10 +7,20 @@
         mc:Ignorable="d"
         Title="MQTT Test " Height="399.375" Width="622.812" Closing="Window_Closing">
     <Grid>
-        <TextBox x:Name="txtBrokerAdress" HorizontalAlignment="Left" Height="19" Margin="10,26,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="202"/>
+        <TextBox x:Name="txtBrokerAdress" HorizontalAlignment="Left" Height="19" Margin="10,26,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="202">
+            <TextBox.Style>
+                <Style TargetType="{x:Type TextBox}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsChecked, ElementName=chkCreateServer}" Value="True">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
         <TextBox x:Name="txtBrokerPort" HorizontalAlignment="Left" Height="19" Margin="269,26,0,0" TextWrapping="Wrap" Text="1883" VerticalAlignment="Top" Width="75"/>
         <CheckBox x:Name="isEncrypted" Content="Encrypted" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="221,50,0,0" VerticalAlignment="Top" Width="123"/>
-        <Button x:Name="btnConnect" Content="Connect" HorizontalAlignment="Left" Height="28" Margin="487,103,0,0" VerticalAlignment="Top" Width="109" Click="btnConnect_Click"/>
+        <Button x:Name="btnConnect" Content="Connect" HorizontalAlignment="Left" Height="28" Margin="487,97,0,0" VerticalAlignment="Top" Width="109" Click="btnConnect_Click"/>
         <TextBox x:Name="txtUserName" HorizontalAlignment="Left" Height="19" Margin="396,31,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="202"/>
         <PasswordBox x:Name="txtPasword" HorizontalAlignment="Left" Height="19" Margin="396,69,0,0" VerticalAlignment="Top" Width="202"/>
         <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Height="16" Margin="396,53,0,0" TextWrapping="Wrap" Text="Password" VerticalAlignment="Top" Width="200"/>
@@ -22,8 +32,10 @@
         <TextBox x:Name="txtTopic" HorizontalAlignment="Left" Height="19" Margin="10,103,0,0" TextWrapping="Wrap" Text="Values" VerticalAlignment="Top" Width="202"/>
         <TextBlock x:Name="textBlock1_Copy1" HorizontalAlignment="Left" Height="16" Margin="10,87,0,0" TextWrapping="Wrap" Text="Topic" VerticalAlignment="Top" Width="200"/>
         <CheckBox x:Name="chkUseLogin" Content="Use Login" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="487,14,0,0" VerticalAlignment="Top" Width="109"/>
-        <ListBox x:Name="listBox1" HorizontalAlignment="Left" Height="205" Margin="10,142,0,0" VerticalAlignment="Top" Width="588"/>
-        <Button x:Name="btnPublish" Content="Publish" HorizontalAlignment="Left" Height="28" Margin="361,103,0,0" VerticalAlignment="Top" Width="109" Click="btnPublish_Click"/>
+        <ListBox x:Name="listBox1" HorizontalAlignment="Left" Height="196" Margin="10,151,0,0" VerticalAlignment="Top" Width="588"/>
+        <Button x:Name="btnPublish" Content="Publish" HorizontalAlignment="Left" Height="28" Margin="233,95,0,0" VerticalAlignment="Top" Width="109" Click="btnPublish_Click"/>
+        <CheckBox x:Name="chkCreateServer" Content="Create Server" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="472,130,0,0" VerticalAlignment="Top" Width="123" IsChecked="False"/>
+        <Button x:Name="btnTestGlobal" Content="Check Abilities" HorizontalAlignment="Left" Height="28" Margin="361,97,0,0" VerticalAlignment="Top" Width="109" Click="btnTestGlobal_Click"/>
 
     </Grid>
 </Window>
