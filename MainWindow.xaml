@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTTTest2"
         mc:Ignorable="d"
-        Title="MQTT Test " Height="399.375" Width="622.812" Closing="Window_Closing">
-    <Grid>
+        Title="MQTT Test " Height="399.375" Width="626" Closing="Window_Closing">
+    <Grid Margin="0,0,-2,0">
         <TextBox x:Name="txtBrokerAdress" HorizontalAlignment="Left" Height="19" Margin="10,26,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="202">
             <TextBox.Style>
                 <Style TargetType="{x:Type TextBox}">
@@ -32,10 +32,11 @@
         <TextBox x:Name="txtTopic" HorizontalAlignment="Left" Height="19" Margin="10,103,0,0" TextWrapping="Wrap" Text="Values" VerticalAlignment="Top" Width="202"/>
         <TextBlock x:Name="textBlock1_Copy1" HorizontalAlignment="Left" Height="16" Margin="10,87,0,0" TextWrapping="Wrap" Text="Topic" VerticalAlignment="Top" Width="200"/>
         <CheckBox x:Name="chkUseLogin" Content="Use Login" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="487,14,0,0" VerticalAlignment="Top" Width="109"/>
-        <ListBox x:Name="listBox1" HorizontalAlignment="Left" Height="196" Margin="10,151,0,0" VerticalAlignment="Top" Width="588"/>
+        <ListBox x:Name="listBox1" Margin="10,151,15,36" d:ItemsSource="{d:SampleData ItemCount=5}"/>
         <Button x:Name="btnPublish" Content="Publish" HorizontalAlignment="Left" Height="28" Margin="233,95,0,0" VerticalAlignment="Top" Width="109" Click="btnPublish_Click"/>
         <CheckBox x:Name="chkCreateServer" Content="Create Server" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="472,130,0,0" VerticalAlignment="Top" Width="123" IsChecked="False"/>
         <Button x:Name="btnTestGlobal" Content="Check Abilities" HorizontalAlignment="Left" Height="28" Margin="361,97,0,0" VerticalAlignment="Top" Width="109" Click="btnTestGlobal_Click"/>
-
+        <Button x:Name="btnLog" Height="22" Width="90" Content="Start Loging" Margin="0,0,15,8" Click="button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+        <TextBlock x:Name="txtLog" Height="22" Width="140" TextWrapping="Wrap" Margin="0,0,110,8" Text="Not Logging right now" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="#FFF70303" Foreground="#FFFBFAFA" Padding="5,2,0,0"/>
     </Grid>
 </Window>
