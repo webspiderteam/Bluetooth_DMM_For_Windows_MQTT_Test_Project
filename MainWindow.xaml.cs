@@ -184,7 +184,7 @@ namespace MQTTTest
                     else
                     {
                         if (Logging)
-                            File.AppendAllText("Log_" + time + ".csv", $"{user["Time"].GetString()}, {user["ValueS"].GetString()} , {user["Range"].GetString()}" + System.Environment.NewLine);
+                            File.AppendAllText("Log_" + time + ".csv", $"{user["Time"].GetString()}, {user["ValueS"].GetString()} , {user["Range"].GetString()}" + System.Environment.NewLine,Encoding.Default);
                     }
                 }
                 catch (Exception ex)
@@ -435,7 +435,7 @@ namespace MQTTTest
             if (Logging)
             {
                 time = DateTime.Now.ToString("dd-MM-yyyy_HH_mm_ss");
-                File.AppendAllText("Log_" + time + ".csv", "Time, Value, Range" + System.Environment.NewLine);
+                File.AppendAllText("Log_" + time + ".csv", "Time, Value, Range" + System.Environment.NewLine, Encoding.Default);
                 btnLog.Content = "Stop Loging";
                 txtLog.Text = "Logging started...";
                 txtLog.Background = new SolidColorBrush(Colors.GreenYellow);
