@@ -8,12 +8,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
+using System.Windows.Media;
 
 namespace MQTTTest
 {
@@ -32,6 +35,9 @@ namespace MQTTTest
         private bool MqttReconnect;
         private static string UserName;
         private static string Password;
+        private bool Logging;
+        private string time;
+
         //MqttClient mqttClient;
         public MainWindow()
         {
@@ -174,6 +180,11 @@ namespace MQTTTest
                             listBox1.Items.Add($"Topic Subscribed : {txtClientId.Text}/{user["MAC"].GetString()}/{txtTopic.Text} at {DateTime.Now}");
                             listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
                         });
+                    }
+                    else
+                    {
+                        if (Logging)
+                            File.AppendAllText("Log_" + time + ".csv", $"{user["Time"].GetString()}, {user["ValueS"].GetString()} , {user["Range"].GetString()}" + System.Environment.NewLine,Encoding.Default);
                     }
                 }
                 catch (Exception ex)
@@ -416,6 +427,27 @@ namespace MQTTTest
         private async void btnTestGlobal_Click(object sender, RoutedEventArgs e)
         {
             await RunAsync();
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            Logging = !Logging;
+            if (Logging)
+            {
+                time = DateTime.Now.ToString("dd-MM-yyyy_HH_mm_ss");
+                File.AppendAllText("Log_" + time + ".csv", "Time, Value, Range" + System.Environment.NewLine, Encoding.Default);
+                btnLog.Content = "Stop Loging";
+                txtLog.Text = "Logging started...";
+                txtLog.Background = new SolidColorBrush(Colors.GreenYellow);
+                txtLog.Foreground = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                btnLog.Content = "Start Loging";
+                txtLog.Text = "Logging stopped...";
+                txtLog.Background = new SolidColorBrush(Colors.Red);
+                txtLog.Foreground = new SolidColorBrush(Colors.White);
+            }
         }
     }
 }
