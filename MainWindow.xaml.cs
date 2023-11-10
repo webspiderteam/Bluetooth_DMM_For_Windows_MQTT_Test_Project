@@ -158,6 +158,7 @@ namespace MQTTTest
         private Task Client_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
         {
             var msg = $"received: {Encoding.UTF8.GetString(arg.ApplicationMessage.Payload)} from Topic {arg.ApplicationMessage.Topic}";
+            Console.WriteLine(msg);
             var message = Encoding.UTF8.GetString(arg.ApplicationMessage.Payload);
             Dispatcher.Invoke(delegate
             {              // we need this construction because the receiving code in the library and the UI with textbox run on different threads
@@ -226,7 +227,7 @@ namespace MQTTTest
         void Subscribe(string stopic)
         {
             var topicFilter = new MqttTopicFilterBuilder()
-                    .WithTopic(stopic)
+                    .WithTopic(stopic+ "/#")
                     .Build();
             client.SubscribeAsync(topicFilter);
             var subscribeMsg = "Subscribed topic=" + stopic;
