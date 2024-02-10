@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
@@ -37,21 +38,32 @@ namespace MQTTTest
         private static string Password;
         private bool Logging;
         private string time;
+        private static IPAddress ipAddress;
 
         //MqttClient mqttClient;
         public MainWindow()
         {
             InitializeComponent();
-
+            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
+            ipAddress = ipHostInfo.AddressList[15];
+            cmbIPList.ItemsSource = ipHostInfo.AddressList;
+            cmbIPList.Items.Filter = (item) =>
+            {
+                if(((IPAddress)item).AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    return true;
+                return false;
+            };
         }
-        public static async Task Run_Server(int port, bool UseLogin, string _UserName, string _Password)
+        public static async Task Run_Server(IPAddress ipAdress, int port, bool UseLogin, string _UserName, string _Password)
         {
-            
+
             var serverOptions = new MqttServerOptionsBuilder()
+                                    .WithDefaultEndpointBoundIPAddress(ipAdress)
+                                    .WithDefaultEndpointBoundIPV6Address(IPAddress.None)
                                     .WithDefaultEndpoint()
                                     .WithDefaultEndpointPort(port);
             //.WithApplicationMessageInterceptor(OnNewMessage);//
-
+            
                
             server = new MqttFactory().CreateMqttServer(serverOptions.Build());
             if (UseLogin)
@@ -63,6 +75,7 @@ namespace MQTTTest
                 server.ValidatingConnectionAsync -= Server_ValidatingConnectionAsync;
                 server.ValidatingConnectionAsync += Server_ValidatingConnectionAsync;
             }
+            
             await server.StartAsync();
         }
 
@@ -101,11 +114,15 @@ namespace MQTTTest
             Task task;
             MqttReconnect = false;
             if (chkCreateServer.IsChecked == true)
-                task = Run_Server(Convert.ToInt16(txtBrokerPort.Text),(bool)chkUseLogin.IsChecked,txtUserName.Text,txtPasword.Password);
+            {
+                task = Run_Server((IPAddress)cmbIPList.SelectedItem,Convert.ToInt16(txtBrokerPort.Text),(bool)chkUseLogin.IsChecked,txtUserName.Text,txtPasword.Password);
+                //txtBrokerAdress.Text = ipAddress.ToString();
+            }
+                
             topic = $"{txtClientId.Text}/{txtTopic.Text}";
             if (client != null && client.IsConnected)
             {
-                await client.DisconnectAsync(MqttClientDisconnectReason.NormalDisconnection,"New connection");
+                await client.DisconnectAsync(MqttClientDisconnectOptions  .NormalDisconnection);//,"New connection");
                 client.Dispose();
             }
             await Connect();
@@ -114,15 +131,15 @@ namespace MQTTTest
         {
             //var server = "test.mosquitto.org";
             //server = "broker.hivemq.com";
-            var server = txtBrokerAdress.Text;
-            var port = Convert.ToInt16(txtBrokerPort.Text);
+            var serveradress = (bool)chkCreateServer.IsChecked ? ipAddress.ToString():txtBrokerAdress.Text;
+            var serverport = Convert.ToInt16(txtBrokerPort.Text);
             var mqttFactory = new MqttFactory();
             client = mqttFactory.CreateMqttClient();
             var tlsoption = new MqttClientOptionsBuilderTlsParameters();
             tlsoption.SslProtocol = (bool)isEncrypted.IsChecked ? System.Security.Authentication.SslProtocols.Ssl3 : System.Security.Authentication.SslProtocols.None;
             var t_options = new MqttClientOptionsBuilder()
                 .WithClientId(Guid.NewGuid().ToString())
-                .WithTcpServer(server, port)
+                .WithTcpServer(serveradress, serverport)
                 .WithTls(tlsoption)
                 .WithCleanSession();
             if ((bool)chkUseLogin.IsChecked)
@@ -134,6 +151,7 @@ namespace MQTTTest
             client.ConnectedAsync += Client_ConnectedAsync;
             client.DisconnectedAsync += Client_DisconnectedAsync;
             client.ApplicationMessageReceivedAsync += Client_ApplicationMessageReceivedAsync;
+
 
             try
             {
@@ -151,7 +169,7 @@ namespace MQTTTest
                     listBox1.ScrollIntoView(listBox1.Items[listBox1.Items.Count - 1]);
                 });
             }
-            var msg = "connect,server=" + server + ",port=" + port.ToString();
+            var msg = "connect,server=" + serveradress + ",port=" + serverport.ToString();
             WriteLog(msg);
         }
 
@@ -193,6 +211,7 @@ namespace MQTTTest
             }
 
             Debug.WriteLine(msg);
+            
             return Task.CompletedTask;
         }
 

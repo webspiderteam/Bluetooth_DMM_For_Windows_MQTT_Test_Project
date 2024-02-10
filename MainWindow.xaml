@@ -12,12 +12,23 @@
                 <Style TargetType="{x:Type TextBox}">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsChecked, ElementName=chkCreateServer}" Value="True">
-                            <Setter Property="IsEnabled" Value="False"/>
+                            <Setter Property="Visibility" Value="Hidden"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </TextBox.Style>
         </TextBox>
+        <ComboBox x:Name="cmbIPList" HorizontalAlignment="Left" Height="19" Margin="10,26,0,0"  VerticalAlignment="Top" Width="202" >
+            <ComboBox.Style>
+                <Style TargetType="{x:Type ComboBox}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsChecked, ElementName=chkCreateServer}" Value="False">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ComboBox.Style>
+        </ComboBox>
         <TextBox x:Name="txtBrokerPort" HorizontalAlignment="Left" Height="19" Margin="269,26,0,0" TextWrapping="Wrap" Text="1883" VerticalAlignment="Top" Width="75"/>
         <CheckBox x:Name="isEncrypted" Content="Encrypted" HorizontalAlignment="Left" Height="16" FlowDirection="RightToLeft" Margin="221,50,0,0" VerticalAlignment="Top" Width="123"/>
         <Button x:Name="btnConnect" Content="Connect" HorizontalAlignment="Left" Height="28" Margin="487,97,0,0" VerticalAlignment="Top" Width="109" Click="btnConnect_Click"/>
@@ -38,5 +49,6 @@
         <Button x:Name="btnTestGlobal" Content="Check Abilities" HorizontalAlignment="Left" Height="28" Margin="361,97,0,0" VerticalAlignment="Top" Width="109" Click="btnTestGlobal_Click"/>
         <Button x:Name="btnLog" Height="22" Width="90" Content="Start Loging" Margin="0,0,15,8" Click="button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
         <TextBlock x:Name="txtLog" Height="22" Width="140" TextWrapping="Wrap" Margin="0,0,110,8" Text="Not Logging right now" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="#FFF70303" Foreground="#FFFBFAFA" Padding="5,2,0,0"/>
+        
     </Grid>
 </Window>
