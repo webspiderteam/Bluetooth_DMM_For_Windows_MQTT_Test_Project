@@ -114,7 +114,6 @@ namespace MQTTTest
             Task task;
             MqttReconnect = false;
             if (chkCreateServer.IsChecked == true)
-            {
                 task = Run_Server((IPAddress)cmbIPList.SelectedItem,Convert.ToInt16(txtBrokerPort.Text),(bool)chkUseLogin.IsChecked,txtUserName.Text,txtPasword.Password);
             topic = $"{txtClientId.Text}/{txtTopic.Text}";
             if (client != null && client.IsConnected)
